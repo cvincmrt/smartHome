@@ -4,7 +4,7 @@ namespace App;
 use Exception;
 use PDO;
 
-class Svetlo extends Zariadenie
+class Svetlo extends Zariadenie implements Ovladatelne
 {
     private int $intenzita;
 
@@ -30,4 +30,16 @@ class Svetlo extends Zariadenie
         }
         $this->intenzita = $intenzita;
     }
+
+    public function zapni()
+    {
+        $this->setStav(1);
+    }
+
+    public function vypni()
+    {
+        $this->setStav(0);
+    }
+    
+   
 }

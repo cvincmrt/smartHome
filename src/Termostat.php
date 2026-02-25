@@ -4,7 +4,7 @@ namespace App;
 use Exception;
 use PDO;
 
-class Termostat extends Zariadenie
+class Termostat extends Zariadenie implements Ovladatelne
 {
     private int $teplota;
 
@@ -29,5 +29,15 @@ class Termostat extends Zariadenie
             throw new Exception("Teplota môže nadobudať hodnoty od 0 do 30");
         }
         $this->teplota = $teplota;
+    }
+
+    public function zapni()
+    {
+        $this->setStav(1);
+    }
+
+    public function vypni()
+    {
+        $this->setStav(0);
     }
 }
