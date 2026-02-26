@@ -8,14 +8,11 @@ class Termostat extends Zariadenie implements Ovladatelne
 {
     private int $teplota;
 
-    public function __construct($nazov, $miestnost, $stav, $teplota)
+    public function __construct($nazov, $miestnost, $stav, $vyrobca, $teplota)
     {
-        parent::__construct($nazov, $miestnost, $stav);
+        parent::__construct($nazov, $miestnost, $stav, $vyrobca);
         
-        if($teplota < 0 || $teplota > 30){
-            throw new Exception("Teplota môže nadobudať hodnoty od 0 do 30");
-        }
-        $this->teplota = $teplota;
+       $this->setTeplota($teplota);
     }
 
     public function getTeplota()

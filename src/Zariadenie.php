@@ -5,21 +5,30 @@ use PDO;
 
 abstract class Zariadenie
 {
+    public const STAV_ZAPNUTIE = 1;
+    public const STAV_VYPNUTIE = 0;
+    
     protected string $nazov;
+    protected Vyrobca $vyrobca;
     protected string $miestnost;
     protected int $stav;
+    private static int $pocet = 0;
    
 
-    public function __construct($nazov, $miestnost, $stav)
+    public function __construct($nazov, $miestnost, $stav, $vyrobca)
     {
         $this->nazov = $nazov;
+        $this->vyrobca = $vyrobca;
         $this->miestnost = $miestnost;
 
-        if($stav != 0 && $stav != 1)
-        {
-            throw new Exception("Stav zariadenia môže nadobudat hodnotu 0, alebo 1");
-        }
-        $this->stav = $stav;
+        $this->setStav($stav);
+
+        self::$pocet++;
+    }
+
+    public function getVyrobca()
+    {
+        return $this->vyrobca;
     }
 
     public function getNazov()
@@ -45,5 +54,9 @@ abstract class Zariadenie
         }
         $this->stav = $stav;
 
+    }
+
+    public static function getPocetZariadeni(){
+        return self::$pocet;
     }
 }

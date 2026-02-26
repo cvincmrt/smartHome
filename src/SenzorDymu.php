@@ -5,9 +5,9 @@ use PDO;
 
 class SenzorDymu extends Zariadenie
 {
-    public function __construct($nazov, $miestnost, $stav)
+    public function __construct($nazov, $miestnost, $stav, $vyrobca)
     {
-        parent::__construct($nazov, $miestnost, $stav);
+        parent::__construct($nazov, $miestnost, $stav, $vyrobca);
     }
 
     public function skontrolovatVzduch()
