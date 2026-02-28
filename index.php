@@ -10,25 +10,50 @@ use App\Termostat;
 use App\Vyrobca;
 use App\Zaluzie;
 use App\SmartHome;
+use App\Database;
 
-$samsung = new Vyrobca("Samsung", "support@samsung.sk");
-$asus = new Vyrobca("Asus", "support@asus.sk");
-$roma = new Vyrobca("Roma", "support@roma.com");
+$conn = new Database();
+$db = $conn->nadviazSpojenie();
 
+if(!$db){
+    die("Chyba spojenia s databazou!!");
+}
 
 $dom = new SmartHome();
-
-$dom->pridajZariadenie(new Svetlo("Stropne svetlo", "kuchyna",1, $asus,80));
-$dom ->pridajZariadenie(new Termostat("Radiator","kupelna",0, $asus, 22));
-$dom->pridajZariadenie(new SenzorDymu("Senzor", "chodba",1, $samsung));
-$dom->pridajZariadenie(new Zaluzie("Ele.zaluzia", "kuchyna",1, $roma, 88));
-
-
-/*
-$miestnost = "kuchyna";
-$vysledokHladania = $dom->najdiVsetkyZariadenia($miestnost);
-*/
+$dom->nacitajZDatabazy($db);
 $vysledokHladania = $dom->vypisVsetkyZariadenia();
+
+
+if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["uloz_svetlo"])){
+    $typ = "Svetlo";
+    $stav = 0;
+
+    $nazov = $_POST["nazov"];
+    $miestnost = $_POST["miestnost"];
+    $vyrobca = $_POST["vyrobca"];
+    $intenzita = (int)$_POST["intenzita"];
+
+    $sql = "INSERT INTO zariadenia (typ, nazov, miestnost, stav, vyrobca, specificky_parameter)
+            VALUE (:typ, :nazov, :miestnost, :stav, :vyrobca, :specificky_parameter)";
+    
+    $stmt = $db->prepare($sql);
+
+    $stmt->bindParam(":typ", $typ);
+    $stmt->bindParam(":nazov", $nazov);
+    $stmt->bindParam(":miestnost", $miestnost);
+    $stmt->bindParam(":stav", $stav);
+    $stmt->bindParam(":vyrobca", $vyrobca);
+    $stmt->bindParam(":specificky_parameter", $intenzita);
+
+    if($stmt->execute()){
+        header("Location:index.php");
+        exit();
+    }
+}
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -50,7 +75,21 @@ $vysledokHladania = $dom->vypisVsetkyZariadenia();
 <body>
     <h1>🏠 Smart Home Dashboard</h1>
     
-    <h3>Zariadenia v miestnosti: <u><?= ucfirst($miestnost) ?></u></h3>
+    <h3>Zariadenia v miestnosti: <u>Vsetky</u></h3>
+    <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <h3>➕ Pridať nové Svetlo</h3>
+
+        <form action="index.php" method="POST">
+            <input type="text" name="nazov" placeholder="Názov (napr. Luster)" >
+            <input type="text" name="miestnost" placeholder="Miestnosť" >
+            <input type="text" name="vyrobca" placeholder="Výrobca" >
+            <input type="number" name="intenzita" placeholder="Intenzita (0-100)" min="0" max="100" >
+            <button type="submit" name="uloz_svetlo" style="background: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer;">
+                Uložiť zariadenie
+            </button>
+        </form>
+
+    </div><br>
     
     <table>
         <thead>
@@ -69,7 +108,7 @@ $vysledokHladania = $dom->vypisVsetkyZariadenia();
                     <td><?= basename(get_class($z)); ?></td>
                     <td><?= $z->getVyrobca()->getInfo(); ?></td>
                     <td>
-                        <?php if($z->getStav() === Zariadenie::STAV_ZAPNUTIE): ?>
+                        <?php if($z->getStav() === Zariadenie::STAV_ZAPNUTE): ?>
                             <span class="status-on">● ZAPNUTÉ</span>
                         <?php else: ?>
                             <span class="status-off">○ VYPNUTÉ</span>
@@ -79,7 +118,7 @@ $vysledokHladania = $dom->vypisVsetkyZariadenia();
                         <?php 
                             if($z instanceof Svetlo){echo "Intenzita osvetlenia: ".$z->getIntenzita()."%"; }
                             if($z instanceof Termostat){
-                                if($z->getStav() === Zariadenie::STAV_ZAPNUTIE){
+                                if($z->getStav() === Zariadenie::STAV_ZAPNUTE){
                                     echo "Teplota termostatu je nastavena na ".$z->getTeplota()."C"; 
                                 }else{
                                     echo "Teplota termostatu je nastavena na 0C";

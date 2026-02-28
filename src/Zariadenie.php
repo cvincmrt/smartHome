@@ -5,8 +5,8 @@ use PDO;
 
 abstract class Zariadenie
 {
-    public const STAV_ZAPNUTIE = 1;
-    public const STAV_VYPNUTIE = 0;
+    public const STAV_ZAPNUTE = 1;
+    public const STAV_VYPNUTE = 0;
     
     protected string $nazov;
     protected Vyrobca $vyrobca;
