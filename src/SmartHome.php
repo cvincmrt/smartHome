@@ -90,8 +90,10 @@ class SmartHome
              if($row["typ"] === "SenzorDymu"){
                 $z = new SenzorDymu($row["nazov"], $row["miestnost"], (int)$row["stav"], $vyrobcaObj);
             }
+            
 
             if($z !== null){
+                $z->setId((int)$row["id"]);
                 $this->pridajZariadenie($z);
             }
             

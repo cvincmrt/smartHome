@@ -34,7 +34,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["uloz_svetlo"])){
     $intenzita = (int)$_POST["intenzita"];
 
     $sql = "INSERT INTO zariadenia (typ, nazov, miestnost, stav, vyrobca, specificky_parameter)
-            VALUE (:typ, :nazov, :miestnost, :stav, :vyrobca, :specificky_parameter)";
+            VALUES (:typ, :nazov, :miestnost, :stav, :vyrobca, :specificky_parameter)";
     
     $stmt = $db->prepare($sql);
 
@@ -51,6 +51,22 @@ if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["uloz_svetlo"])){
     }
 }
 
+if(isset($_POST["prepni_stav"])){
+    $id = $_POST["id_zariadenia"];
+    $novyStav = $_POST["novy_stav"];
+
+    $sql = "UPDATE zariadenia SET stav = :stav WHERE id = :id";
+    $stmt = $db->prepare($sql);
+
+    $stmt->bindParam(":id", $id);
+    $stmt->bindParam(":stav", $novyStav);
+
+    if($stmt->execute()){
+        header("Location:index.php");
+        exit();
+    }
+
+}
 
 
 
@@ -96,16 +112,24 @@ if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["uloz_svetlo"])){
             <tr>
                 <th>Zariadenie</th>
                 <th>Typ</th>
+                 <th>Miestnost</th>
                 <th>Výrobca</th>
                 <th>Stav</th>
                 <th>Detail</th>
+                <th>Akcia</th>
             </tr>
         </thead>
         <tbody>
-            <?php foreach($vysledokHladania as $z): ?>
+            <?php foreach($vysledokHladania as $z): 
+                    $idZariadenia = $z->getId();
+                    $okamzityStav = ($z->getStav() === Zariadenie::STAV_ZAPNUTE) ? "Vypnúť 🔴" : "Zapnúť 🟢";
+                    $novyStavZariadenia = ($z->getStav() === Zariadenie::STAV_ZAPNUTE)? Zariadenie::STAV_VYPNUTE : Zariadenie::STAV_ZAPNUTE;
+                   
+            ?>
                 <tr>
                     <td><?= $z->getNazov(); ?></td>
                     <td><?= basename(get_class($z)); ?></td>
+                    <td><?= $z->getMiestnost(); ?></td>
                     <td><?= $z->getVyrobca()->getInfo(); ?></td>
                     <td>
                         <?php if($z->getStav() === Zariadenie::STAV_ZAPNUTE): ?>
@@ -127,6 +151,23 @@ if($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["uloz_svetlo"])){
                             if($z instanceof Zaluzie){echo "Zaluzie su vytiahnute na ".$z->getVyskaVytiahnutia()."%"; }
                             if($z instanceof SenzorDymu){echo "Monitoring je aktivny"; }
                         ?>
+                    </td>
+                    <td>
+                        <?php if($z instanceof Ovladatelne): ?>
+                            <form action="index.php" method="POST">
+                                <input type="hidden" name="id_zariadenia" value="<?= $idZariadenia; ?>">
+                                <input type="hidden" name="novy_stav" value="<?= $novyStavZariadenia; ?>">
+
+                                <button type="submit" name="prepni_stav">
+                                    <?= $okamzityStav; ?>
+                                </button>
+                                <button type="submit" name="zmazZariadenie">
+                                    <Span>Zmaz</Span>
+                                </button>
+
+                            </form>
+                        <?php endif; ?>
+                        
                     </td>
                 </tr>
             <?php endforeach; ?>

@@ -8,6 +8,7 @@ abstract class Zariadenie
     public const STAV_ZAPNUTE = 1;
     public const STAV_VYPNUTE = 0;
     
+    protected ?int $id = null;
     protected string $nazov;
     protected Vyrobca $vyrobca;
     protected string $miestnost;
@@ -29,6 +30,15 @@ abstract class Zariadenie
     public function getVyrobca()
     {
         return $this->vyrobca;
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function setId($id){
+        $this->id = $id;
     }
 
     public function getNazov()
